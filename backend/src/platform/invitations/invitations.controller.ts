@@ -11,6 +11,9 @@ import { OrgType } from '@platform/organizations';
 import { BaseController } from '@common/base';
 import { CurrentUser } from '@common/decorators/current-user.decorator';
 import { OrganizationOverrideInterceptor } from '@common/interceptors/organization-override.intercepters';
+import { InvitationResponseDto } from './dto/invitation.res.dto';
+import { AcceptInviteResponseDto } from './dto/accept-invite.res.dto';
+import { UserResponseDto } from '@platform/users/dto/user.res.dto';
 
 @Controller('invitations')
 export class InvitationsController extends BaseController<Invitation> {
@@ -24,6 +27,7 @@ export class InvitationsController extends BaseController<Invitation> {
     ok: {
       status: 201,
       description: 'The invitation has been successfully sent.',
+      type: InvitationResponseDto,
     },
     responses: [{ status: 401, description: 'Unauthorized.' }],
     bearer: true,
@@ -35,7 +39,7 @@ export class InvitationsController extends BaseController<Invitation> {
   async inviteOrganization(
     @Body() dto: OrganizationInviteDto,
     @CurrentUser() admin: User,
-  ) {
+  ): Promise<InvitationResponseDto> {
     const newInvitation = new Invitation();
     newInvitation.organizationName = dto.organizationName;
     newInvitation.organizationType = dto.organizationType;
@@ -43,7 +47,18 @@ export class InvitationsController extends BaseController<Invitation> {
     newInvitation.lastName = dto.lastName;
     newInvitation.email = dto.email;
     newInvitation.invitedBy = admin;
-    return await this.invitationsService.sendOrganizationInvite(newInvitation);
+    const createdInvite =
+      await this.invitationsService.sendOrganizationInvite(newInvitation);
+
+    return {
+      id: createdInvite.id,
+      email: createdInvite.email,
+      firstName: createdInvite.firstName,
+      lastName: createdInvite.lastName,
+      organizationName: createdInvite.organizationName,
+      organizationType: createdInvite.organizationType,
+      expiresAt: createdInvite.expiresAt,
+    };
   }
 
   @Swag({
@@ -52,13 +67,38 @@ export class InvitationsController extends BaseController<Invitation> {
       `This endpoint accept both type of invite: organizations and members.`,
       `Call for first time for otp email call again with otp to verify and complete.`,
     ],
-    ok: { description: 'The invitation has been successfully accepted.' },
+    ok: {
+      description: 'The invitation has been successfully accepted.',
+      type: AcceptInviteResponseDto,
+    },
     responses: [{ status: 400, description: 'Invalid or expired invitation.' }],
     orgHeader: false,
   })
   @Post('accept')
-  async accept(@Body() dto: AcceptInviteDto) {
-    return await this.invitationsService.accept(dto);
+  async accept(@Body() dto: AcceptInviteDto): Promise<AcceptInviteResponseDto> {
+    const result = await this.invitationsService.accept(dto);
+
+    const userResponse: UserResponseDto = {
+      id: result.user.id,
+      email: result.user.email,
+      firstName: result.user.firstName,
+      lastName: result.user.lastName,
+      organization: result.user.organization
+        ? {
+            organizationName: result.user.organization.name,
+            organizationType: result.user.organization.type,
+            firstName: undefined,
+            lastName: undefined,
+            email: undefined,
+          }
+        : null,
+    };
+
+    return {
+      access_token: result.access_token,
+      refresh_token: result.refresh_token,
+      user: userResponse,
+    };
   }
 
   @Swag({
@@ -66,21 +106,35 @@ export class InvitationsController extends BaseController<Invitation> {
     ok: {
       status: 201,
       description: 'The invitation has been successfully sent.',
+      type: InvitationResponseDto,
     },
     responses: [{ status: 401, description: 'Unauthorized.' }],
     bearer: true,
     guards: [OrgJwtGuard],
   })
   @Post('members')
-  async inviteMember(@Body() dto: InviteMemberDto, @CurrentUser() user: User) {
+  async inviteMember(
+    @Body() dto: InviteMemberDto,
+    @CurrentUser() user: User,
+  ): Promise<InvitationResponseDto> {
     const invitation = new Invitation();
     invitation.firstName = dto.firstName;
     invitation.lastName = dto.lastName;
     invitation.email = dto.email;
     invitation.invitedBy = user;
-    return await this.invitationsService.inviteMember(
+    const newInvite = await this.invitationsService.inviteMember(
       invitation,
       user.organization,
     );
+
+    return {
+      id: newInvite.id,
+      email: newInvite.email,
+      firstName: newInvite.firstName,
+      lastName: newInvite.lastName,
+      organizationName: newInvite.organizationName,
+      organizationType: newInvite.organizationType,
+      expiresAt: newInvite.expiresAt,
+    };
   }
 }
