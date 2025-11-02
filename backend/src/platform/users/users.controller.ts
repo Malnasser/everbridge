@@ -15,6 +15,8 @@ import { CurrentUser } from '@common/decorators/current-user.decorator';
 import { BaseController, PaginationQueryDto } from '@common/base';
 import { InternalGuard } from '@core/auth/guards';
 import { OrganizationOverrideInterceptor } from '@common/interceptors/organization-override.intercepters';
+import { UserResponseDto } from './dto/user.res.dto';
+import { PaginatedUserResponseDto } from './dto/paginated-user.res.dto';
 
 @Controller('users')
 export class UsersController extends BaseController<User> {
@@ -51,7 +53,7 @@ export class UsersController extends BaseController<User> {
 
   @Swag({
     summary: 'Get all users',
-    ok: { type: User, isArray: true },
+    ok: { type: PaginatedUserResponseDto },
     query: PaginationQueryDto,
     bearer: true,
     guards: [OrgJwtGuard, InternalGuard],
@@ -61,13 +63,33 @@ export class UsersController extends BaseController<User> {
   async findAll(
     @CurrentUser() currentUser: User,
     @Query() query: PaginationQueryDto,
-  ) {
-    if (currentUser.organization.type === OrgType.PLATFORM) {
-      return await super._findAll(query);
+  ): Promise<PaginatedUserResponseDto> {
+    if (currentUser.organization.type !== OrgType.PLATFORM) {
+      const forced = `organizationId:${currentUser.organization.id}`;
+      if (!query.filter) query.filter = forced;
+      else query.filter = `${forced},${query.filter}`;
     }
-    const forced = `organizationId:${currentUser.organization.id}`;
-    if (!query.filter) query.filter = forced;
-    else query.filter = `${forced},${query.filter}`;
-    return await super._findAll(query);
+
+    const paginatedUsers = await super._findAll(query);
+    const mappedData: UserResponseDto[] = paginatedUsers.data.map((user) => ({
+      id: user.id,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      organization: user.organization
+        ? {
+            organizationName: user.organization.name,
+            organizationType: user.organization.type,
+            firstName: undefined,
+            lastName: undefined,
+            email: undefined,
+          }
+        : null,
+    }));
+
+    return {
+      ...paginatedUsers,
+      data: mappedData,
+    };
   }
 }

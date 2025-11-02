@@ -1,4 +1,4 @@
-import { PaginationQueryDto } from './dto';
+import { PaginationQueryDto, PaginationRes } from './dto';
 import { IBaseService } from './interfaces';
 import { BadRequestException } from '@nestjs/common';
 
@@ -12,7 +12,7 @@ export abstract class BaseController<T> {
   protected _findAll(
     query: PaginationQueryDto,
     relations?: string[],
-  ): Promise<{ data: T[]; total: number; page: number; limit: number }> {
+  ): Promise<PaginationRes<T>> {
     const { page = 1, limit = 10, filter, select, sort } = query;
 
     const columns = this.baseService.repository.metadata.columns;
