@@ -6,7 +6,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { User } from './entities';
-import { OrgJwtGuard } from '@core/auth/guards/auth.guard';
+import { OrgJwtGuard } from '@core/auth/guards';
 import { MeResponseDto } from './dto/me.res.dto';
 import { UsersService } from './users.service';
 import { OrgType } from '@platform/organizations';

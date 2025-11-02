@@ -5,6 +5,9 @@ export class LoginResponseDto {
   @ApiProperty()
   access_token: string;
 
+  @ApiProperty()
+  refresh_token: string;
+
   @ApiProperty({ type: UserResponseDto })
   user: UserResponseDto;
 }

@@ -5,11 +5,19 @@ import { UsersModule } from '../../platform/users/users.module';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
-import { JwtStrategy } from './strategies/jwt.strategy';
-import { InternalGuard, OrgJwtGuard } from './guards';
+import { InternalGuard, JwtRefreshGuard, OrgJwtGuard } from './guards';
+import { JwtStrategy } from './strategies';
+import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
 
 @Module({
-  providers: [AuthService, JwtStrategy, OrgJwtGuard, InternalGuard],
+  providers: [
+    AuthService,
+    JwtStrategy,
+    OrgJwtGuard,
+    InternalGuard,
+    JwtRefreshGuard,
+    JwtRefreshStrategy,
+  ],
   controllers: [AuthController],
   imports: [
     UsersModule,

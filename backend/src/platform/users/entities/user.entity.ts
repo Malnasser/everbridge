@@ -28,4 +28,7 @@ export class User extends BaseEntity {
   @ManyToOne(() => Organization)
   @JoinColumn({ name: 'organizationId' })
   organization: Organization;
+
+  @Column({ nullable: true })
+  hashed_refresh_token: string;
 }

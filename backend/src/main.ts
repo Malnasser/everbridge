@@ -9,6 +9,7 @@ import {
   OrgType,
 } from '@platform/organizations';
 import { UsersService } from '@platform/users';
+import * as cookieParser from 'cookie-parser';
 
 async function seedPlatformData(app: INestApplication) {
   const orgSvc = app.get(OrganizationService);
@@ -35,6 +36,7 @@ async function seedPlatformData(app: INestApplication) {
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableCors();
+  app.use(cookieParser());
   app.use(passport.initialize());
   const config = new DocumentBuilder()
     .setTitle('CMS Service')

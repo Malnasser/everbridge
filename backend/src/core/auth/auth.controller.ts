@@ -1,12 +1,29 @@
-import { Body, Controller, Post, UnauthorizedException } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  HttpStatus,
+  Post,
+  Res,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { Response } from 'express';
 import { AuthService } from './auth.service';
-import { LoginDto } from './dto/login.req.dto';
+import { LoginDto, RefreshTokenDto } from './dto';
 import { LoginResponseDto } from './dto/login.res.dto';
 import { Swag } from '@common/decorators/generic-swag.decorator';
+import { CurrentUser } from '@common/decorators/current-user.decorator';
+import { User } from '@platform/users';
+import { JwtRefreshGuard, OrgJwtGuard } from './guards';
+import { ApiCookieAuth } from '@nestjs/swagger';
+import { ConfigService } from '@nestjs/config';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private readonly configService: ConfigService,
+  ) {}
 
   @Swag({
     summary: 'Log in a user',
@@ -18,9 +35,90 @@ export class AuthController {
     orgHeader: false,
   })
   @Post('login')
-  async login(@Body() dto: LoginDto) {
+  async login(
+    @Body() dto: LoginDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     const user = await this.authService.validateUser(dto.email, dto.password);
     if (!user) throw new UnauthorizedException('Invalid credentials');
-    return this.authService.login(user);
+
+    const tokens = await this.authService.getTokens(user);
+    const isProd = process.env.NODE_ENV === 'production';
+    const tenMinutes = 10 * 60 * 1000;
+
+    res.cookie('refresh_token', tokens.refresh_token, {
+      httpOnly: true,
+      secure: isProd,
+      sameSite: 'strict',
+      path: '/auth/refresh',
+      maxAge: this.configService.get('app.jwt.refreshExpiresIn') - tenMinutes,
+    });
+
+    res.cookie('access_token', tokens.access_token, {
+      httpOnly: true,
+      secure: isProd,
+      sameSite: 'strict',
+      path: '/',
+      maxAge: this.configService.get('app.jwt.accessExpiresIn'),
+    });
+
+    return { message: 'Login successful' };
+  }
+
+  @ApiCookieAuth('refresh_token')
+  @Swag({
+    summary: 'Refresh User Access',
+    ok: {
+      description: 'Refreshed token successfully.',
+      type: RefreshTokenDto,
+    },
+    guards: [JwtRefreshGuard],
+    responses: [{ status: 401, description: 'Invalid credentials' }],
+    orgHeader: false,
+  })
+  @Post('refresh')
+  async refresh(
+    @CurrentUser() user: User,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const tokens = await this.authService.getTokens(user);
+    const isProd = process.env.NODE_ENV === 'production';
+    const tenMinutes = 10 * 60 * 1000;
+
+    res.cookie('refresh_token', tokens.refresh_token, {
+      httpOnly: true,
+      secure: isProd,
+      sameSite: 'strict',
+      path: '/auth/refresh',
+      maxAge: this.configService.get('app.jwt.refreshExpiresIn') - tenMinutes,
+    });
+
+    res.cookie('access_token', tokens.access_token, {
+      httpOnly: true,
+      secure: isProd,
+      sameSite: 'strict',
+      path: '/',
+      maxAge: this.configService.get('app.jwt.accessExpiresIn') - tenMinutes,
+    });
+
+    return { message: 'Refreshed token successfully.' };
+  }
+
+  @Swag({
+    summary: 'Log out a user',
+    ok: {
+      description: 'User logged out successfully.',
+    },
+    bearer: true,
+    guards: [OrgJwtGuard],
+    responses: [{ status: 401, description: 'Unauthorized.' }],
+    orgHeader: false,
+  })
+  @Post('logout')
+  @HttpCode(HttpStatus.OK)
+  async logout(@CurrentUser() user: User) {
+    console.log(user);
+    await this.authService.logout(user.id);
+    return { message: 'successfully logout' };
   }
 }

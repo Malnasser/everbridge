@@ -62,14 +62,14 @@ services:
     environment:
       # Database
       DB_HOST: db
-      DB_PORT: 5433
+      DB_PORT: 5432
       DB_USERNAME: user
       DB_PASSWORD: password
       DB_NAME: database
 
       # Redis
       REDIS_HOST: redis
-      REDIS_PORT: 6380
+      REDIS_PORT: 6379
 
       # JWT
       JWT_ACCESS_SECRET: my_secret_secret
@@ -117,3 +117,4 @@ volumes:
 networks:
   app-network:
     driver: bridge
+  internal:

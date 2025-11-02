@@ -18,6 +18,10 @@ export class UsersService extends BaseService<User> {
     return this.userRepo.findByEmail(data.email);
   }
 
+  async findUserById(id: string): Promise<User | undefined> {
+    return this.userRepo.findById(id);
+  }
+
   async createUser(data: {
     firstName: string;
     lastName: string;
