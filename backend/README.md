@@ -1,6 +1,6 @@
-# Thmanyah Streaming CMS - Service
+# EverBridge - Service
 
-This directory contains the core backend service for the Thmanyah Streaming CMS. It is a [NestJS](https://nestjs.com/) application responsible for managing all CMS data, including programs, episodes, categories, users, and media assets.
+This directory contains the core backend service for the EverBridge. It is a [NestJS](https://nestjs.com/) application responsible for managing all CMS data, including programs, episodes, categories, users, and media assets.
 
 ## Architecture
 
@@ -52,32 +52,7 @@ aws dynamodb create-table \
       AttributeName=publishDate,AttributeType=S \
   --key-schema AttributeName=id,KeyType=HASH \
   --billing-mode PAY_PER_REQUEST \
-  --global-secondary-indexes '[
-    {
-      "IndexName": "category",
-      "KeySchema": [
-        {"AttributeName":"categoryId","KeyType":"HASH"},
-        {"AttributeName":"publishDate","KeyType":"RANGE"}
-      ],
-      "Projection":{"ProjectionType":"ALL"}
-    },
-    {
-      "IndexName": "language",
-      "KeySchema": [
-        {"AttributeName":"language","KeyType":"HASH"},
-        {"AttributeName":"publishDate","KeyType":"RANGE"}
-      ],
-      "Projection":{"ProjectionType":"ALL"}
-    },
-    {
-      "IndexName": "status",
-      "KeySchema": [
-        {"AttributeName":"status","KeyType":"HASH"},
-        {"AttributeName":"publishDate","KeyType":"RANGE"}
-      ],
-      "Projection":{"ProjectionType":"ALL"}
-    }
-  ]' \
+  --global-secondary-indexes \
   --endpoint-url http://localhost:8000
 
 ```
