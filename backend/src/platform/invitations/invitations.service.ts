@@ -26,7 +26,7 @@ export class InvitationsService extends BaseService<Invitation> {
     invitation.createdAt = new Date();
     const createdInvite = await super.create(invitation);
 
-    this.noitifactionService.sendEmail({
+    await this.noitifactionService.sendEmail({
       to: invitation.email,
       subject: 'EverBridge Join Invite',
       message: `Here is your invite: ${invitation.token}`,
@@ -74,7 +74,7 @@ export class InvitationsService extends BaseService<Invitation> {
 
     const newInvite = await super.create(invitation);
 
-    this.noitifactionService.sendEmail({
+    await this.noitifactionService.sendEmail({
       to: invitation.email,
       subject: 'EverBridge Join Invite',
       message: `Here is your invite: ${invitation.token}`,

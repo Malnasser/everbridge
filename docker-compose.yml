@@ -53,6 +53,14 @@ services:
       timeout: 5s
       retries: 5
 
+  mailhog:
+    image: mailhog/mailhog
+    ports:
+      - "1025:1025" # SMTP server
+      - "8025:8025" # Web UI
+    networks:
+      - app-network
+
   cms-service:
     build:
       context: ./backend/
@@ -88,6 +96,13 @@ services:
 
       # App
       NODE_ENV: development
+
+      # Email
+      EMAIL_HOST: mailhog
+      EMAIL_PORT: 1025
+      EMAIL_USER:
+      EMAIL_PASSWORD:
+      EMAIL_FROM: no-reply@everbridge.com
 
       # TypeORM (optional, for compatibility)
       TYPEORM_HOST: db

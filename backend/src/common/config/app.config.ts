@@ -31,4 +31,11 @@ export default registerAs('app', () => ({
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
     bucketName: process.env.AWS_BUCKET_NAME,
   },
+  email: {
+    host: process.env.EMAIL_HOST,
+    port: parseInt(process.env.EMAIL_PORT || '1025', 10),
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASSWORD,
+    from: process.env.EMAIL_FROM,
+  },
 }));
