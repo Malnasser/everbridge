@@ -2,7 +2,12 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as passport from 'passport';
-import { INestApplication } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpStatus,
+  INestApplication,
+  ValidationPipe,
+} from '@nestjs/common';
 import {
   Organization,
   OrganizationService,
@@ -10,6 +15,7 @@ import {
 } from '@platform/organizations';
 import { UsersService } from '@platform/users';
 import * as cookieParser from 'cookie-parser';
+import { ResponseDto } from '@common/base/dto/response.dto';
 
 async function seedPlatformData(app: INestApplication) {
   const orgSvc = app.get(OrganizationService);
@@ -46,6 +52,26 @@ async function bootstrap() {
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: false,
+      transform: true,
+      exceptionFactory: (errors) => {
+        const formatted = errors.map((err) => ({
+          loc: ['body', err.property],
+          msg: Object.values(err.constraints)[0],
+          type: Object.keys(err.constraints)[0],
+        }));
+
+        const res = new ResponseDto();
+        res.data = formatted;
+        res.message = 'Validation Error';
+        res.error = HttpStatus.BAD_REQUEST;
+        return new BadRequestException(res);
+      },
+    }),
+  );
 
   app.getHttpAdapter().get('/health', (_req, res) => {
     res.status(200).send('OK');

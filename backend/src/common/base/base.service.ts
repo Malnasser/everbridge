@@ -1,4 +1,9 @@
-import { FindManyOptions, DeepPartial, FindOptionsOrder } from 'typeorm';
+import {
+  FindManyOptions,
+  DeepPartial,
+  FindOptionsOrder,
+  FindOptionsWhere,
+} from 'typeorm';
 import { IBaseService, IBaseRepository } from './interfaces';
 
 export abstract class BaseService<T> implements IBaseService<T> {
@@ -38,7 +43,7 @@ export abstract class BaseService<T> implements IBaseService<T> {
     return updatedEntity;
   }
 
-  async findOne(condition: Partial<T>): Promise<T | null> {
+  async findOne(condition: FindOptionsWhere<T>): Promise<T | null> {
     const data = await this.baseRepository.findOne(condition);
     return data;
   }

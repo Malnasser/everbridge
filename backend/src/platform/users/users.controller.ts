@@ -6,8 +6,6 @@ import {
   UseInterceptors,
   Patch,
   Param,
-  HttpCode,
-  HttpStatus,
 } from '@nestjs/common';
 import { User } from './entities';
 import { OrgJwtGuard } from '@core/auth/guards';
@@ -21,6 +19,7 @@ import { InternalGuard } from '@core/auth/guards';
 import { OrganizationOverrideInterceptor } from '@common/interceptors/organization-override.intercepters';
 import { UserResponseDto } from './dto/user.res.dto';
 import { PaginatedUserResponseDto } from './dto/paginated-user.res.dto';
+import { ResponseDto } from '@common/base/dto/response.dto';
 
 @Controller('users')
 export class UsersController extends BaseController<User> {
@@ -39,19 +38,23 @@ export class UsersController extends BaseController<User> {
     orgHeader: false,
   })
   @Get('me')
-  me(@CurrentUser() user: User): MeResponseDto {
+  me(@CurrentUser() user: User): ResponseDto<MeResponseDto> {
     return {
-      id: user.id,
-      email: user.email,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      organization: user.organization
-        ? {
-            id: user.organization.id,
-            name: user.organization.name,
-            type: user.organization.type,
-          }
-        : null,
+      message: 'your basic user info',
+      data: {
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        organization: user.organization
+          ? {
+              id: user.organization.id,
+              name: user.organization.name,
+              type: user.organization.type,
+            }
+          : null,
+      },
+      error: null,
     };
   }
 
@@ -117,8 +120,6 @@ export class UsersController extends BaseController<User> {
       lastName: deactivatedUser.lastName,
       organization: deactivatedUser.organization
         ? {
-            organizationName: deactivatedUser.organization.name,
-            organizationType: deactivatedUser.organization.type,
             firstName: undefined,
             lastName: undefined,
             email: undefined,

@@ -6,10 +6,8 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '@platform/users';
 import * as bcrypt from 'bcrypt';
-import { RegisterDto } from './dto';
-import { Organization } from '@platform/organizations';
+import { LoginResponseDto, RegisterDto } from './dto';
 import { ConfigService } from '@nestjs/config';
-import { User } from '@platform/users/entities/user.entity';
 
 @Injectable()
 export class AuthService {
@@ -19,29 +17,35 @@ export class AuthService {
     private configService: ConfigService,
   ) {}
 
-  async register(dto: RegisterDto, org?: Organization) {
+  async register(dto: RegisterDto): Promise<LoginResponseDto | Error> {
+    const userExists = await this.usersService.findUserByEmail({
+      email: dto.email,
+    });
+    if (userExists) {
+      return new Error('Cannot register with provided credentials');
+    }
+
     const user = await this.usersService.createUser({
       firstName: dto.firstName,
       lastName: dto.lastName,
       email: dto.email,
       password: dto.password,
-      organization: org,
     });
 
-    const { access_token, refresh_token } = await this.getTokens(user);
-    await this.usersService.update(user.id, {
-      hashed_refresh_token: await bcrypt.hash(refresh_token, 10),
-    });
+    const payload = { sub: user.id, email: user.email };
+    const { access_token, refresh_token } = await this.getTokens(payload);
 
     return {
-      access_token,
-      refresh_token,
+      access_token: access_token,
+      refresh_token: refresh_token,
       user: {
         id: user.id,
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
-        organization: org,
+        isEmailVerified: user.emailVerified,
+        isActive: user.isActive,
+        organizationId: user.organizationId,
       },
     };
   }

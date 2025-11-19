@@ -3,6 +3,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Organization, User } from 'platform';
 import { Invitation } from '@platform/invitations/entities/Invitation.entity';
+import {
+  OnboardingApplication,
+  OnboardingApplicationHistory,
+} from '@platform/onboarding/entities';
 
 @Module({
   imports: [
@@ -15,7 +19,13 @@ import { Invitation } from '@platform/invitations/entities/Invitation.entity';
         username: configService.get<string>('app.database.username'),
         password: configService.get<string>('app.database.password'),
         database: configService.get<string>('app.database.name'),
-        entities: [Organization, User, Invitation],
+        entities: [
+          Organization,
+          User,
+          Invitation,
+          OnboardingApplication,
+          OnboardingApplicationHistory,
+        ],
         migrations: [__dirname + '/../../../migrations/*.ts'], // Adjusted path
         synchronize: false,
         logging: configService.get<string>('app.env') == 'development',

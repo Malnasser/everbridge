@@ -1,6 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { OrgType } from '@platform/organizations';
-import { IsEmail, IsEnum, IsString } from 'class-validator';
+import { IsEmail, IsString } from 'class-validator';
 
 export class OrganizationInviteDto {
   @ApiProperty()
@@ -14,12 +13,4 @@ export class OrganizationInviteDto {
   @ApiProperty()
   @IsEmail()
   email: string;
-
-  @ApiProperty()
-  @IsString()
-  organizationName: string;
-
-  @ApiProperty({ enum: OrgType, default: OrgType.SME })
-  @IsEnum(OrgType)
-  organizationType: OrgType;
 }

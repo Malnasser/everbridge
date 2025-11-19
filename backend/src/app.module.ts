@@ -5,11 +5,13 @@ import { DatabaseModule } from '@common/database/database.module';
 import { OrganizationsModule } from '@platform/organizations/organization.module';
 import { UsersModule } from '@platform/users/users.module';
 import { InvitationsModule } from '@platform/invitations/invitations.module';
+import { OnboardingModule } from '@platform/onboarding';
 
 @Module({
   imports: [
     AppConfigModule,
     DatabaseModule,
+    OnboardingModule,
     UsersModule,
     OrganizationsModule,
     CoreModule,

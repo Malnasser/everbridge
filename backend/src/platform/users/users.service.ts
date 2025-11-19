@@ -38,16 +38,11 @@ export class UsersService extends BaseService<User> {
   }): Promise<User> {
     const hashedPassword = await bcrypt.hash(data.password, 10);
 
-    const createdOrg = await this.organizationService.create(data.organization);
-
     const newUser = new User();
     newUser.firstName = data.firstName;
     newUser.lastName = data.lastName;
     newUser.email = data.email;
     newUser.hashed_password = hashedPassword;
-    if (createdOrg) {
-      newUser.organization = createdOrg;
-    }
 
     return super.create(newUser);
   }

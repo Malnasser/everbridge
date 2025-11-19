@@ -2,6 +2,10 @@ import { DataSource } from 'typeorm';
 import { config } from 'dotenv';
 import { Organization, User } from 'platform';
 import { Invitation } from '@platform/invitations/entities/Invitation.entity';
+import {
+  OnboardingApplication,
+  OnboardingApplicationHistory,
+} from '@platform/onboarding/entities';
 
 config();
 
@@ -19,7 +23,13 @@ export const AppDataSource = new DataSource({
   username: process.env.DB_USERNAME,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  entities: [Organization, User, Invitation],
+  entities: [
+    Organization,
+    User,
+    Invitation,
+    OnboardingApplication,
+    OnboardingApplicationHistory,
+  ],
   migrations: ['migrations/*.ts'],
   synchronize: false,
   logging: process.env.NODE_ENV === 'development',

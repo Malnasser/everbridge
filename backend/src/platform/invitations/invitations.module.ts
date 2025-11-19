@@ -8,6 +8,7 @@ import { Invitation } from './entities/Invitation.entity';
 import { AuthModule } from '@core/auth';
 import { NotificationModule } from '@core/notification/notification.module';
 import { OrganizationsModule } from '@platform/organizations';
+import { UsersModule } from '@platform/users';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { OrganizationsModule } from '@platform/organizations';
     AuthModule,
     NotificationModule,
     OrganizationsModule,
+    UsersModule,
   ],
   controllers: [InvitationsController],
   providers: [InvitationsService, InvitationsRepository],

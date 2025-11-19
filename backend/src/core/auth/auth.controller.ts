@@ -17,6 +17,7 @@ import { User } from '@platform/users';
 import { JwtRefreshGuard, OrgJwtGuard } from './guards';
 import { ApiCookieAuth } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
+import { ResponseDto } from '@common/base/dto/response.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -38,9 +39,11 @@ export class AuthController {
   async login(
     @Body() dto: LoginDto,
     @Res({ passthrough: true }) res: Response,
-  ) {
+  ): Promise<ResponseDto<LoginResponseDto>> {
     const user = await this.authService.validateUser(dto.email, dto.password);
     if (!user) throw new UnauthorizedException('Invalid credentials');
+
+    console.log('User logged in:', user.email);
 
     const tokens = await this.authService.getTokens(user);
     const isProd = process.env.NODE_ENV === 'production';
@@ -62,7 +65,23 @@ export class AuthController {
       maxAge: this.configService.get('app.jwt.accessExpiresIn'),
     });
 
-    return { message: 'Login successful' };
+    return {
+      message: 'User logged in successfully.',
+      data: {
+        access_token: tokens.access_token,
+        refresh_token: tokens.refresh_token,
+        user: {
+          id: user.id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          isEmailVerified: user.isEmailVerified,
+          isActive: user.isActive,
+          organizationId: user.organizationId,
+        },
+      },
+      error: null,
+    };
   }
 
   @ApiCookieAuth('refresh_token')

@@ -51,13 +51,13 @@ export abstract class BaseRepository<T> implements IBaseRepository<T> {
     return (result.affected ?? 0) > 0;
   }
 
-  async findByCondition(condition: Partial<T>): Promise<T[]> {
+  async findByCondition(condition: FindOptionsWhere<T>): Promise<T[]> {
     return await this.repository.find({
       where: condition as FindOptionsWhere<T>,
     });
   }
 
-  async findOne(condition: Partial<T>): Promise<T | null> {
+  async findOne(condition: FindOptionsWhere<T>): Promise<T | null> {
     return await this.repository.findOne({
       where: condition as FindOptionsWhere<T>,
     });

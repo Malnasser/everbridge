@@ -1,9 +1,8 @@
 import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
-import { Organization, OrgType } from 'platform/organizations';
 import { User } from '@platform/users';
 import { BaseEntity } from '@common/database/base.entity';
 
-@Entity()
+@Entity('invitations')
 export class Invitation extends BaseEntity {
   @Column()
   firstName: string;
@@ -26,17 +25,4 @@ export class Invitation extends BaseEntity {
 
   @Column({ type: 'timestamptz', nullable: true })
   acceptedAt: Date;
-
-  @Column({ nullable: true })
-  targetOrgId?: string;
-
-  @Column({ nullable: true })
-  organizationName: string;
-
-  @Column({ enum: OrgType, default: OrgType.SME })
-  organizationType: OrgType;
-
-  @ManyToOne(() => Organization, { nullable: true })
-  @JoinColumn({ name: 'targetOrgId' })
-  targetOrg?: Organization;
 }

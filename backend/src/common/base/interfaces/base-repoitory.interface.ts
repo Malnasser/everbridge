@@ -3,6 +3,7 @@ import {
   FindManyOptions,
   FindOptionsOrder,
   EntityMetadata,
+  FindOptionsWhere,
 } from 'typeorm';
 
 export interface IBaseRepository<T> {
@@ -20,7 +21,7 @@ export interface IBaseRepository<T> {
     relations?: string[],
   ): Promise<T | null>;
   delete(id: string | number): Promise<boolean>;
-  findOne(condition: Partial<T>): Promise<T | null>;
+  findOne(condition: FindOptionsWhere<T>): Promise<T | null>;
   count(condition?: Partial<T>): Promise<number>;
   exists(condition: Partial<T>): Promise<boolean>;
   findWithPagination(

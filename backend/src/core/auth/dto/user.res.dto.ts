@@ -9,4 +9,16 @@ export class UserResponseDto {
 
   @ApiProperty()
   firstName: string;
+
+  @ApiProperty()
+  lastName: string;
+
+  @ApiProperty()
+  isEmailVerified: boolean;
+
+  @ApiProperty()
+  isActive: boolean;
+
+  @ApiProperty()
+  organizationId;
 }
