@@ -8,11 +8,12 @@ import {
   UseInterceptors,
   UploadedFile,
   HttpStatus,
+  Query,
 } from '@nestjs/common';
 import { ApiConsumes, ApiBody, ApiTags } from '@nestjs/swagger';
 import { UploaderService } from './uploader.service';
 import { InternalGuard, OrgJwtGuard } from '@core/auth/guards';
-import { UploadResDto } from './dto';
+import { UploadResDto, UploadsResDto } from './dto';
 import { BaseController } from '@common/base/base.controller';
 import { Upload } from './entities/upload.entity';
 import { Swag } from '@common/decorators/generic-swag.decorator';
@@ -20,6 +21,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { CurrentUser } from '@common/decorators/current-user.decorator';
 import { User } from '@platform/users/entities/user.entity';
 import { ResponseDto } from '@common/base/dto/response.dto';
+import { PaginationQueryDto } from '@common/base';
 
 @ApiTags('Uploader')
 @Controller('uploader')
@@ -72,20 +74,46 @@ export class UploaderController extends BaseController<Upload> {
     };
   }
 
-  // @Swag({
-  //   summary: 'List all uploads paginated (Internal Admin Only)',
-  //   ok: { type: UploadsResDto },
-  //   query: PaginationQueryDto,
-  //   bearer: true,
-  //   guards: [OrgJwtGuard, InternalGuard],
-  //   orgHeader: false,
-  // })
-  // @Get()
-  // async listAllUploads(
-  //   @Query() query: PaginationQueryDto,
-  // ): Promise<UploadsResDto> {
-  //   return await super._findAll(query);
-  // }
+  @Swag({
+    summary: 'List all uploads paginated (Internal Admin Only)',
+    ok: { type: UploadsResDto },
+    query: PaginationQueryDto,
+    bearer: true,
+    guards: [OrgJwtGuard, InternalGuard],
+    orgHeader: false,
+  })
+  @Get()
+  async listAllUploads(
+    @Query() query: PaginationQueryDto,
+  ): Promise<UploadsResDto> {
+    const paginatedUploads = await super._findAll(query, ['owner']);
+    const mappedData = paginatedUploads.data.map((file: any) => ({
+      id: file.id,
+      createdAt: file.createdAt,
+      updatedAt: file.updatedAt,
+      filename: file.filename,
+      key: file.key,
+      bucket: file.bucket,
+      mimetype: file.mimetype,
+      size: file.size,
+      url: file.url,
+      owner: file.owner
+        ? {
+            id: file.owner.id,
+            firstName: file.owner.firstName,
+            lastName: file.owner.lastName,
+            isActive: file.owner.isActive,
+            emailVerified: file.owner.emailVerified,
+            organizationId: file.owner.organizationId,
+          }
+        : null,
+    }));
+
+    return {
+      ...paginatedUploads,
+      data: mappedData,
+    };
+  }
 
   @Swag({
     summary: 'Get signed URL to download an upload (Internal Admin Only)',
