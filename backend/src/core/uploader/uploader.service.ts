@@ -66,15 +66,20 @@ export class UploaderService extends BaseService<Upload> {
     });
   }
 
-  async getSignedUrl(uploadId: string): Promise<string> {
+  async getSignedUrl(uploadId: string): Promise<string | Error> {
     const upload = await this.uploadsRepository.findById(uploadId);
     if (!upload) {
-      throw new NotFoundException(`Upload with ID ${uploadId} not found`);
+      return new Error(`Upload with ID ${uploadId} not found`);
     }
     const command = new GetObjectCommand({
       Bucket: this.bucket,
       Key: upload.key,
     });
-    return await getSignedUrl(this.s3Client, command, { expiresIn: 3600 });
+
+    try {
+      return await getSignedUrl(this.s3Client, command, { expiresIn: 3600 });
+    } catch (err) {
+      return new Error('Error downloading file.');
+    }
   }
 }

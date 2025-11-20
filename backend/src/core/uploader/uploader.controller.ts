@@ -9,6 +9,7 @@ import {
   UploadedFile,
   HttpStatus,
   Query,
+  HttpException,
 } from '@nestjs/common';
 import { ApiConsumes, ApiBody, ApiTags } from '@nestjs/swagger';
 import { UploaderService } from './uploader.service';
@@ -22,6 +23,7 @@ import { CurrentUser } from '@common/decorators/current-user.decorator';
 import { User } from '@platform/users/entities/user.entity';
 import { ResponseDto } from '@common/base/dto/response.dto';
 import { PaginationQueryDto } from '@common/base';
+import { Organization, OrgType } from '@platform/organizations';
 
 @ApiTags('Uploader')
 @Controller('uploader')
@@ -125,8 +127,51 @@ export class UploaderController extends BaseController<Upload> {
   @Get('/:id/download')
   async downloadUpload(
     @Param('id', ParseUUIDPipe) id: string,
-  ): Promise<{ signedUrl: string }> {
+    @CurrentUser() user: User,
+  ): Promise<ResponseDto<string>> {
+    const existingUpload = await this.uploaderService.findById(id);
+
+    if (!existingUpload) {
+      throw new HttpException(
+        {
+          message: 'File not found.',
+          data: null,
+          error: HttpStatus.NOT_FOUND,
+        },
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    if (
+      user?.organization.type !== OrgType.PLATFORM ||
+      existingUpload.owner.id !== user.id
+    ) {
+      throw new HttpException(
+        {
+          message: 'User not authorized to download this file.',
+          data: null,
+          error: HttpStatus.FORBIDDEN,
+        },
+        HttpStatus.FORBIDDEN,
+      );
+    }
+
     const signedUrl = await this.uploaderService.getSignedUrl(id);
-    return { signedUrl };
+    if (signedUrl instanceof Error) {
+      throw new HttpException(
+        {
+          message: 'Cannot Download file.',
+          data: null,
+          error: HttpStatus.BAD_REQUEST,
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    return {
+      message: 'Downloading successfully.',
+      data: signedUrl,
+      error: null,
+    };
   }
 }
