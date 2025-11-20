@@ -64,20 +64,20 @@ export class UploaderController extends BaseController<Upload> {
     };
   }
 
-  @Swag({
-    summary: 'List all uploads paginated (Internal Admin Only)',
-    ok: { type: UploadsResDto },
-    query: PaginationQueryDto,
-    bearer: true,
-    guards: [OrgJwtGuard, InternalGuard],
-    orgHeader: false,
-  })
-  @Get()
-  async listAllUploads(
-    @Query() query: PaginationQueryDto,
-  ): Promise<UploadsResDto> {
-    return await super._findAll(query);
-  }
+  // @Swag({
+  //   summary: 'List all uploads paginated (Internal Admin Only)',
+  //   ok: { type: UploadsResDto },
+  //   query: PaginationQueryDto,
+  //   bearer: true,
+  //   guards: [OrgJwtGuard, InternalGuard],
+  //   orgHeader: false,
+  // })
+  // @Get()
+  // async listAllUploads(
+  //   @Query() query: PaginationQueryDto,
+  // ): Promise<UploadsResDto> {
+  //   return await super._findAll(query);
+  // }
 
   @Swag({
     summary: 'Get signed URL to download an upload (Internal Admin Only)',

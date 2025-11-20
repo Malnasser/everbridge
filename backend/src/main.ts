@@ -16,6 +16,7 @@ import {
 import { UsersService } from '@platform/users';
 import * as cookieParser from 'cookie-parser';
 import { ResponseDto } from '@common/base/dto/response.dto';
+import { CustomExceptionFilter } from '@common/filters/custom-exception.filter';
 
 async function seedPlatformData(app: INestApplication) {
   const orgSvc = app.get(OrganizationService);
@@ -41,17 +42,11 @@ async function seedPlatformData(app: INestApplication) {
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
   app.enableCors();
   app.use(cookieParser());
   app.use(passport.initialize());
-  const config = new DocumentBuilder()
-    .setTitle('CMS Service')
-    .setDescription('The CMS service API description')
-    .setVersion('1.0')
-    .addBearerAuth()
-    .build();
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, document);
+  app.useGlobalFilters(new CustomExceptionFilter());
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -72,6 +67,15 @@ async function bootstrap() {
       },
     }),
   );
+  const config = new DocumentBuilder()
+    .setTitle('CMS Service')
+    .setDescription('The CMS service API description')
+    .setVersion('1.0')
+    .addBearerAuth()
+    .build();
+
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api/docs', app, document);
 
   app.getHttpAdapter().get('/health', (_req, res) => {
     res.status(200).send('OK');
