@@ -2,6 +2,7 @@ import { BaseEntity } from '@common/database/base.entity';
 import { Column, Entity, JoinColumn, OneToMany, OneToOne } from 'typeorm';
 import { HumanTaskSignal } from './human-task-signal.entity';
 import { HumanTaskAuthorization } from './human-task-authorization.entity';
+import { TaskAttachment } from './task-attachment.entity';
 
 export enum HumanTaskStatus {
   READY = 'READY',
@@ -42,4 +43,7 @@ export class HumanTask extends BaseEntity {
   @OneToOne(() => HumanTaskAuthorization, (auth) => auth.humanTask)
   @JoinColumn()
   authorization: HumanTaskAuthorization;
+
+  @OneToMany(() => TaskAttachment, (attachment) => attachment.humanTask)
+  attachments: TaskAttachment[];
 }

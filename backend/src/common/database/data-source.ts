@@ -2,12 +2,15 @@ import { DataSource } from 'typeorm';
 import { config } from 'dotenv';
 import { Organization, User } from 'platform';
 import { Invitation } from '@platform/invitations/entities/Invitation.entity';
-import {
-  OnboardingApplication,
-  OnboardingApplicationHistory,
-  OnboardingApplicationUpload,
-} from '@platform/onboarding/entities';
+import { OnboardingApplication } from '@platform/onboarding/entities';
 import { Upload } from '@core/uploader';
+import {
+  HumanTask,
+  HumanTaskAuthorization,
+  HumanTaskSignal,
+  TaskAttachment,
+} from '@workflow-engine/human-tasks';
+import { Comment } from '@workflow-engine/comments';
 
 config();
 
@@ -30,9 +33,12 @@ export const AppDataSource = new DataSource({
     User,
     Invitation,
     OnboardingApplication,
-    OnboardingApplicationHistory,
     Upload,
-    OnboardingApplicationUpload,
+    HumanTask,
+    Comment,
+    HumanTaskSignal,
+    HumanTaskAuthorization,
+    TaskAttachment,
   ],
   migrations: ['migrations/*.ts'],
   synchronize: false,

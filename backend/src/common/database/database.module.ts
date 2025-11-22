@@ -3,12 +3,15 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Organization, User } from 'platform';
 import { Invitation } from '@platform/invitations/entities/Invitation.entity';
-import {
-  OnboardingApplication,
-  OnboardingApplicationHistory,
-  OnboardingApplicationUpload,
-} from '@platform/onboarding/entities';
+import { OnboardingApplication } from '@platform/onboarding/entities';
 import { Upload } from '@core/uploader';
+import {
+  HumanTask,
+  HumanTaskAuthorization,
+  HumanTaskSignal,
+  TaskAttachment,
+} from '@workflow-engine/human-tasks';
+import { Comment } from '@workflow-engine/comments';
 
 @Module({
   imports: [
@@ -26,9 +29,12 @@ import { Upload } from '@core/uploader';
           User,
           Invitation,
           OnboardingApplication,
-          OnboardingApplicationHistory,
           Upload,
-          OnboardingApplicationUpload,
+          HumanTask,
+          Comment,
+          HumanTaskSignal,
+          HumanTaskAuthorization,
+          TaskAttachment,
         ],
         migrations: [__dirname + '/../../../migrations/*.ts'], // Adjusted path
         synchronize: false,
